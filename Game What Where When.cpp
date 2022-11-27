@@ -3,38 +3,79 @@
 #include <fstream>
 #include <string>
 
-void the_weel(int *);
+int turnCounter = 0;
+std::string sector;
+int usedSectors[13];
+bool check_offset(int);
+void the_weel();
 std::string show_question();
+void check_sectorNumber(int&);
 
 int main()
 {
     int expertPoints = 0;
     int spectatorsPoints = 0;
-    int turnCounter = 13;
-    int usedSectors[13];
-    std::string truAnswer, answer;
+    
+   std::string truAnswer, answer;
+
     std::cout << "Lets play What? Where? When?!" << std::endl;
-    for (; turnCounter != 0; turnCounter--)
+    for (; turnCounter < 13; turnCounter++)
     {
-        if (expertPoints == 6 || spectatorsPoints == 6) break;
+        the_weel();
+        
         std::cout << "Attention! question is:" << std::endl;
         truAnswer = show_question();
         std::cout << truAnswer << std::endl;
         std::cout << "Experts, enter your answer: " << std::endl;
         getline(std::cin, answer);
-        (answer == truAnswer ? expertPoints++ : spectatorsPoints);
-
+        (answer == truAnswer ? expertPoints++ : spectatorsPoints++);
+        if (expertPoints == 6 || spectatorsPoints == 6) break;
     }
     (expertPoints > spectatorsPoints ? std::cout << "Expetrs win!" : std::cout << "Spectators win!");
 }
 
-void the_weel(int *usedSectors)
+bool check_offset(int offset)
 {
-    int offset = 0;
-    int sectorNumber = 0;
-    std::string sector;
+    if (offset < 0 && offset > 13)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
 
-    switch (sectorNumber)
+void the_weel()
+{
+   int offset = 0;
+   int sectorNumber = 1;
+   std::cout << "Please!Enter the offset of the weel:" << std::endl;
+   std::cin >> offset;
+   
+   while(!check_offset(offset))
+   {
+       std::cerr << "Error! Enter the number only in range 0 - 13!" << std::endl;
+       std::cin >> offset;
+   }
+   std::cin.ignore();
+   sectorNumber += offset;
+   check_sectorNumber(sectorNumber);
+   /*std::cout << sectorNumber << std::endl;
+   for (int i = 0; i < 13; i++)
+   {
+       std::cout << usedSectors[i];
+   }
+   std::cout << std::endl;*/
+   for (int i = 0; i < 13; i++)
+   {
+       if (*(usedSectors + i) == 0)
+       {
+           *(usedSectors + i) = sectorNumber;
+           break;
+       }
+   }
+   switch (sectorNumber)
     {
         case 1:
             sector = "Sector1.txt";
@@ -84,7 +125,7 @@ std::string show_question()
     std::string answer = "";
     std::vector<char> buffer;
     char temp = 0; {};
-    question.open("Sector1.txt");
+    question.open(sector);
     if (question.is_open())
     {
         int counter = 0;
@@ -114,4 +155,19 @@ std::string show_question()
         std::cerr << "Error!" << std::endl;
         return std::string("error!");
     }
+}
+
+void check_sectorNumber(int& sectorNumber)
+{
+    for (int i = 0; i < 13; i++)
+    {
+        if (sectorNumber == *(usedSectors + i))
+        {
+            sectorNumber++;
+            check_sectorNumber(sectorNumber);
+        }
+        
+    }
+
+    //check_sectorNumber(sectorNumber);
 }
